@@ -4,7 +4,6 @@ namespace Lab_7
 {
     public class Blue_2
     {
-
         public struct Participant
         {
             private string _name;
@@ -53,6 +52,11 @@ namespace Lab_7
             {
                 Console.WriteLine($"Name: {Name}, Surname: {Surname}, Total Score: {TotalScore}");
             }
+
+            public static void Sort(Participant[] participants)
+            {
+                Array.Sort(participants, (a, b) => b.TotalScore.CompareTo(a.TotalScore));
+            }
         }
 
         public abstract class WaterJump
@@ -98,7 +102,7 @@ namespace Lab_7
                 {
                     if (Participants.Length < 3) return new double[0];
 
-                    Array.Sort(Participants, (a, b) => b.TotalScore.CompareTo(a.TotalScore));
+                    Participant.Sort(Participants);
 
                     return new double[]
                     {
@@ -120,7 +124,7 @@ namespace Lab_7
                 {
                     if (Participants.Length < 3) return new double[0];
 
-                    Array.Sort(Participants, (a, b) => b.TotalScore.CompareTo(a.TotalScore));
+                    Participant.Sort(Participants);
 
                     int topCount = Math.Min(10, Math.Max(3, Participants.Length / 2));
                     double[] prizes = new double[topCount];

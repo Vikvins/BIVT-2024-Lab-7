@@ -30,14 +30,14 @@ namespace Lab_7
 
             public void SetPlace(int place)
             {
-                if (!_setted_place)
+                if (_setted_place)
                 {
-                    _place = place;
-                    _setted_place = true;
+                    Console.WriteLine($"Место уже установлено");
                 }
                 else
                 {
-                    Console.WriteLine($"Место уже установлено");
+                    _place = place;
+                    _setted_place = true;
                 }
             }
 
@@ -54,6 +54,9 @@ namespace Lab_7
             private int _added_sportsmen;
 
             public string Name => _name;
+
+            protected int AddedSportsmen => _added_sportsmen;
+
             public Sportsman[] Sportsmen
             {
                 get
@@ -96,7 +99,7 @@ namespace Lab_7
                             bestPlace = _sportsmen[i].Place;
                         }
                     }
-                    return bestPlace;
+                    return bestPlace == int.MaxValue ? 0 : bestPlace;
                 }
             }
 
@@ -115,7 +118,7 @@ namespace Lab_7
                 }
                 else
                 {
-                    Console.WriteLine("Команда уже заполнена");
+                    return;
                 }
             }
 
@@ -129,11 +132,13 @@ namespace Lab_7
                     }
                     else
                     {
-                        Console.WriteLine("Команда уже заполнена");
-                        break;
+                        return;
                     }
                 }
             }
+
+            
+            protected abstract double GetTeamStrength();
 
             public static void Sort(Team[] teams)
             {
@@ -163,11 +168,7 @@ namespace Lab_7
                         }
                     }
                 }
-
-                Console.WriteLine("Команды отсортированы");
             }
-
-            protected abstract double GetTeamStrength();
 
             public static Team GetChampion(Team[] teams)
             {
@@ -192,7 +193,7 @@ namespace Lab_7
 
             public void Print()
             {
-                Console.WriteLine($"{_name}: Лучшее место - {TopPlace}, Суммарный счёт - {SummaryScore}");
+                Console.WriteLine($"{_name}: Лучшее место - {TopPlace}, Общий счёт - {SummaryScore}");
             }
         }
 
@@ -202,13 +203,15 @@ namespace Lab_7
 
             protected override double GetTeamStrength()
             {
+                if (AddedSportsmen == 0) return 0; 
+
                 double totalPlaces = 0;
-                for (int i = 0; i < Sportsmen.Length; i++)
+                for (int i = 0; i < AddedSportsmen; i++)
                 {
                     totalPlaces += Sportsmen[i].Place;
                 }
-                double averagePlace = totalPlaces / Sportsmen.Length;
-                return 100 / averagePlace;
+                double averagePlace = totalPlaces / AddedSportsmen;
+                return averagePlace == 0 ? 0 : 100 / averagePlace; 
             }
         }
 
@@ -218,17 +221,21 @@ namespace Lab_7
 
             protected override double GetTeamStrength()
             {
+                if (AddedSportsmen == 0) return 0;
+
                 double sumOfPlaces = 0;
                 double productOfPlaces = 1;
-                int numSportsmen = Sportsmen.Length;
 
-                for (int i = 0; i < Sportsmen.Length; i++)
+                for (int i = 0; i < AddedSportsmen; i++)
                 {
                     sumOfPlaces += Sportsmen[i].Place;
-                    productOfPlaces *= Sportsmen[i].Place;
+                    if (Sportsmen[i].Place != 0)
+                    {
+                        productOfPlaces *= Sportsmen[i].Place;
+                    }
                 }
 
-                return 100 * sumOfPlaces * numSportsmen / productOfPlaces;
+                return productOfPlaces == 0 ? 0 : 100 * sumOfPlaces * AddedSportsmen / productOfPlaces;
             }
         }
     }

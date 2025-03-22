@@ -21,6 +21,7 @@ namespace Lab_7
             }
 
             public string Name => _name;
+            public int Votes => _votes;
 
             public virtual int CountVotes(Response[] responses)
             {

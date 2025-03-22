@@ -9,7 +9,6 @@ namespace Lab_7
 {
     public class Blue_4
     {
-
         public abstract class Team
         {
             private string _name;
@@ -38,7 +37,6 @@ namespace Lab_7
                     return _scores.Sum();
                 }
             }
-
 
             public Team(string name)
             {
@@ -111,33 +109,66 @@ namespace Lab_7
 
             public void Sort()
             {
-                Array.Sort(_manTeams, (team1, team2) => team2.TotalScore.CompareTo(team1.TotalScore));
-                Array.Sort(_womanTeams, (team1, team2) => team2.TotalScore.CompareTo(team1.TotalScore));
+                Array.Sort(_manTeams, CompareTeams);
+                Array.Sort(_womanTeams, CompareTeams);
+            }
+
+            private int CompareTeams(Team team1, Team team2)
+            {
+                if (team1 == null) return 1;
+                if (team2 == null) return -1;
+                return team2.TotalScore.CompareTo(team1.TotalScore);
             }
 
             public static Group Merge(Group group1, Group group2, int size)
             {
+                if (group1._manTeams.Length == 0 || group1._womanTeams.Length == 0 ||
+                    group2._manTeams.Length == 0 || group2._womanTeams.Length == 0)
+                {
+                    return null;
+                }
+
+                else if (group1._manTeams == null || group1._womanTeams == null ||
+                        group2._manTeams == null || group2._womanTeams == null)
+                {
+                    return null;
+                }
+
                 Group result = new Group("Финалисты");
-                result.MergeTeams(group1.ManTeams, group2.ManTeams, size / 2);
-                result.MergeTeams(group1.WomanTeams, group2.WomanTeams, size / 2);
+                result.MergeTeams(result._manTeams, group1._manTeams, group2._manTeams, size / 2);
+                result.MergeTeams(result._womanTeams, group1._womanTeams, group2._womanTeams, size / 2);
                 return result;
             }
-
-            private void MergeTeams(Team[] teams1, Team[] teams2, int size)
+            private void MergeTeams(Team[] result, Team[] teams1, Team[] teams2, int size)
             {
                 Team[] allTeams = new Team[teams1.Length + teams2.Length];
-                Array.Copy(teams1, allTeams, teams1.Length);
-                Array.Copy(teams2, 0, allTeams, teams1.Length, teams2.Length);
-                Array.Sort(allTeams, (team1, team2) => team2.TotalScore.CompareTo(team1.TotalScore));
-                Team[] mergedTeams = new Team[Math.Min(size, allTeams.Length)];
-                Array.Copy(allTeams, mergedTeams, mergedTeams.Length);
-                Add(mergedTeams);
+                int index = 0;
+                for (int i = 0; i < teams1.Length; i++)
+                {
+                    if (teams1[i] != null)
+                    {
+                        allTeams[index++] = teams1[i];
+                    }
+                }
+                for (int i = 0; i < teams2.Length; i++)
+                {
+                    if (teams2[i] != null)
+                    {
+                        allTeams[index++] = teams2[i];
+                    }
+                }
+
+                Array.Sort(allTeams, (team1, team2) => team2?.TotalScore.CompareTo(team1?.TotalScore) ?? 0);
+
+                for (int i = 0; i < size && i < allTeams.Length; i++)
+                {
+                    result[i] = allTeams[i];
+                }
             }
 
             public void Print()
             {
-                Console.WriteLine($"{_name}");
-
+                Console.WriteLine($"Группа: {Name}");
                 Console.WriteLine("Мужские команды:");
                 foreach (var team in _manTeams)
                 {
@@ -158,4 +189,3 @@ namespace Lab_7
         }
     }
 }
-
