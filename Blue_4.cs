@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Lab_7;
 
+
 namespace Lab_7
 {
     public class Blue_4
@@ -29,11 +30,7 @@ namespace Lab_7
             {
                 get
                 {
-                    if (_scores == null)
-                    {
-                        return 0;
-                    }
-
+                    if (_scores == null) return 0;
                     return _scores.Sum();
                 }
             }
@@ -69,101 +66,113 @@ namespace Lab_7
         public class Group
         {
             private string _name;
-            private Team[] _manTeams;
-            private Team[] _womanTeams;
-            private int _manIndex;
-            private int _womanIndex;
+            private ManTeam[] _manTeams;
+            private WomanTeam[] _womanTeams;
+            private int _countMan;
+            private int _countWoman;
 
             public string Name => _name;
-            public Team[] ManTeams => _manTeams;
-            public Team[] WomanTeams => _womanTeams;
+            public ManTeam[] ManTeams => _manTeams;
+            public WomanTeam[] WomanTeams => _womanTeams;
 
             public Group(string name)
             {
                 _name = name;
-                _manTeams = new Team[12];
-                _womanTeams = new Team[12];
-                _manIndex = 0;
-                _womanIndex = 0;
+                _manTeams = new ManTeam[12];
+                _womanTeams = new WomanTeam[12];
+                _countMan = 0;
+                _countWoman = 0;
             }
 
             public void Add(Team team)
             {
-                if (team is ManTeam && _manIndex < _manTeams.Length)
+                if (team == null) return;
+
+                if (team is ManTeam manTeam && _countMan < _manTeams.Length)
                 {
-                    _manTeams[_manIndex++] = team;
+                    _manTeams[_countMan++] = manTeam;
                 }
-                else if (team is WomanTeam && _womanIndex < _womanTeams.Length)
+                else if (team is WomanTeam womanTeam && _countWoman < _womanTeams.Length)
                 {
-                    _womanTeams[_womanIndex++] = team;
+                    _womanTeams[_countWoman++] = womanTeam;
                 }
             }
 
             public void Add(Team[] teams)
             {
+                if (teams == null) return;
                 foreach (var team in teams)
                 {
                     Add(team);
                 }
             }
 
-            public void Sort()
+            private void TeamSort(Team[] teams, int count)
             {
-                Array.Sort(_manTeams, CompareTeams);
-                Array.Sort(_womanTeams, CompareTeams);
+                if (teams == null || count == 0) return;
+
+                for (int i = 1; i < count; i++)
+                {
+                    for (int j = i; j > 0 && teams[j - 1].TotalScore < teams[j].TotalScore; j--)
+                    {
+                        var temp = teams[j];
+                        teams[j] = teams[j - 1];
+                        teams[j - 1] = temp;
+                    }
+                }
             }
 
-            private int CompareTeams(Team team1, Team team2)
+            public void Sort()
             {
-                if (team1 == null) return 1;
-                if (team2 == null) return -1;
-                return team2.TotalScore.CompareTo(team1.TotalScore);
+                TeamSort(_manTeams, _countMan);
+                TeamSort(_womanTeams, _countWoman);
             }
 
             public static Group Merge(Group group1, Group group2, int size)
             {
-                if (group1._manTeams.Length == 0 || group1._womanTeams.Length == 0 ||
-                    group2._manTeams.Length == 0 || group2._womanTeams.Length == 0)
-                {
-                    return null;
-                }
-
-                else if (group1._manTeams == null || group1._womanTeams == null ||
-                        group2._manTeams == null || group2._womanTeams == null)
-                {
-                    return null;
-                }
+                if (group1 == null || group2 == null) return null;
 
                 Group result = new Group("Финалисты");
-                result.MergeTeams(result._manTeams, group1._manTeams, group2._manTeams, size / 2);
-                result.MergeTeams(result._womanTeams, group1._womanTeams, group2._womanTeams, size / 2);
+                Team[] manTeams = MergeTeams(group1._manTeams, group2._manTeams, size);
+                Team[] womanTeams = MergeTeams(group1._womanTeams, group2._womanTeams, size);
+
+                result.Add(manTeams);
+                result.Add(womanTeams);
+
                 return result;
             }
-            private void MergeTeams(Team[] result, Team[] teams1, Team[] teams2, int size)
+
+            private static Team[] MergeTeams(Team[] team1, Team[] team2, int size)
             {
-                Team[] allTeams = new Team[teams1.Length + teams2.Length];
-                int index = 0;
-                for (int i = 0; i < teams1.Length; i++)
+                if (team1 == null || team2 == null) return null;
+
+                Team[] result = new Team[size];
+                int n = size / 2;
+                int i = 0, j = 0, k = 0;
+
+                while (k < size && i < n && j < n && team1[i] != null && team2[j] != null)
                 {
-                    if (teams1[i] != null)
+                    if (team1[i].TotalScore >= team2[j].TotalScore)
                     {
-                        allTeams[index++] = teams1[i];
+                        result[k++] = team1[i++];
                     }
-                }
-                for (int i = 0; i < teams2.Length; i++)
-                {
-                    if (teams2[i] != null)
+                    else
                     {
-                        allTeams[index++] = teams2[i];
+                        result[k++] = team2[j++];
                     }
                 }
 
-                Array.Sort(allTeams, (team1, team2) => team2?.TotalScore.CompareTo(team1?.TotalScore) ?? 0);
-
-                for (int i = 0; i < size && i < allTeams.Length; i++)
+                while (k < size && i < n && team1[i] != null)
                 {
-                    result[i] = allTeams[i];
+                    result[k++] = team1[i++];
                 }
+
+                while (k < size && j < n && team2[j] != null)
+                {
+                    result[k++] = team2[j++];
+                }
+
+                return result;
             }
 
             public void Print()

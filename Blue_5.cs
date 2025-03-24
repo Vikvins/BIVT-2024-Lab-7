@@ -14,7 +14,6 @@ namespace Lab_7
             private string _name;
             private string _surname;
             private int _place;
-            private bool _setted_place;
 
             public string Name => _name;
             public string Surname => _surname;
@@ -25,19 +24,13 @@ namespace Lab_7
                 _name = name;
                 _surname = surname;
                 _place = 0;
-                _setted_place = false;
             }
 
             public void SetPlace(int place)
             {
-                if (_setted_place)
-                {
-                    Console.WriteLine($"Место уже установлено");
-                }
-                else
+                if (_place == 0)
                 {
                     _place = place;
-                    _setted_place = true;
                 }
             }
 
@@ -51,36 +44,27 @@ namespace Lab_7
         {
             private string _name;
             private Sportsman[] _sportsmen;
-            private int _added_sportsmen;
+            private int _count;
 
             public string Name => _name;
 
-            protected int AddedSportsmen => _added_sportsmen;
-
-            public Sportsman[] Sportsmen
-            {
-                get
-                {
-                    Sportsman[] result = new Sportsman[_added_sportsmen];
-                    for (int i = 0; i < _added_sportsmen; i++)
-                    {
-                        result[i] = _sportsmen[i];
-                    }
-                    return result;
-                }
-            }
+            public Sportsman[] Sportsmen => _sportsmen;
 
             public int SummaryScore
             {
                 get
                 {
                     int sum = 0;
-                    for (int i = 0; i < _added_sportsmen; i++)
+                    for (int i = 0; i < _sportsmen.Length; i++)
                     {
-                        int points = 5 - _sportsmen[i].Place + 1;
-                        if (points > 0 && _sportsmen[i].Place != 0)
+                        if (_sportsmen[i] == null) continue;
+                        switch (_sportsmen[i].Place)
                         {
-                            sum += points;
+                            case 1: sum += 5; break;
+                            case 2: sum += 4; break;
+                            case 3: sum += 3; break;
+                            case 4: sum += 2; break;
+                            case 5: sum += 1; break;
                         }
                     }
                     return sum;
@@ -91,15 +75,15 @@ namespace Lab_7
             {
                 get
                 {
-                    int bestPlace = int.MaxValue;
-                    for (int i = 0; i < _added_sportsmen; i++)
+                    int maxPlace = 18;
+                    for (int i = 0; i < _sportsmen.Length; i++)
                     {
-                        if (_sportsmen[i].Place != 0 && _sportsmen[i].Place < bestPlace)
+                        if (_sportsmen[i] != null && _sportsmen[i].Place > 0 && _sportsmen[i].Place < maxPlace)
                         {
-                            bestPlace = _sportsmen[i].Place;
+                            maxPlace = _sportsmen[i].Place;
                         }
                     }
-                    return bestPlace == int.MaxValue ? 0 : bestPlace;
+                    return maxPlace;
                 }
             }
 
@@ -107,87 +91,68 @@ namespace Lab_7
             {
                 _name = name;
                 _sportsmen = new Sportsman[6];
-                _added_sportsmen = 0;
+                _count = 0;
             }
 
             public void Add(Sportsman sportsman)
             {
-                if (_added_sportsmen < 6)
-                {
-                    _sportsmen[_added_sportsmen++] = sportsman;
-                }
-                else
-                {
-                    return;
-                }
+                if (_sportsmen == null || sportsman == null || _sportsmen.Length == 0 || _count >= _sportsmen.Length) return;
+                _sportsmen[_count++] = sportsman;
             }
 
-            public void Add(Sportsman[] newSportsmen)
+            public void Add(Sportsman[] sportsman)
             {
-                foreach (var sportsman in newSportsmen)
+                if (_sportsmen == null || sportsman == null || sportsman.Length == 0 || _sportsmen.Length == 0 || _count >= _sportsmen.Length) return;
+                int i = 0;
+                while (_count < _sportsmen.Length && i < sportsman.Length)
                 {
-                    if (_added_sportsmen < 6)
+                    if (sportsman[i] == null)
                     {
-                        _sportsmen[_added_sportsmen++] = sportsman;
+                        i++;
+                        continue;
                     }
-                    else
-                    {
-                        return;
-                    }
+                    _sportsmen[_count++] = sportsman[i++];
                 }
             }
-
-            
-            protected abstract double GetTeamStrength();
 
             public static void Sort(Team[] teams)
             {
-                if (teams == null || teams.Length == 0)
+                if (teams == null || teams.Length == 0) return;
+                for (int i = 1; i < teams.Length; i++)
                 {
-                    return;
-                }
-
-                for (int i = 0; i < teams.Length - 1; i++)
-                {
-                    for (int j = 0; j < teams.Length - i - 1; j++)
+                    for (int j = 0; j < teams.Length - i; j++)
                     {
-                        if (teams[j].SummaryScore < teams[j + 1].SummaryScore)
+                        if (teams[j].SummaryScore < teams[j + 1].SummaryScore ||
+                            (teams[j].SummaryScore == teams[j + 1].SummaryScore && teams[j].TopPlace > teams[j + 1].TopPlace))
                         {
                             Team temp = teams[j];
                             teams[j] = teams[j + 1];
                             teams[j + 1] = temp;
                         }
-                        else if (teams[j].SummaryScore == teams[j + 1].SummaryScore)
-                        {
-                            if (teams[j].TopPlace > teams[j + 1].TopPlace)
-                            {
-                                Team temp = teams[j];
-                                teams[j] = teams[j + 1];
-                                teams[j + 1] = temp;
-                            }
-                        }
                     }
                 }
             }
+
+            protected abstract double GetTeamStrength();
 
             public static Team GetChampion(Team[] teams)
             {
                 if (teams == null || teams.Length == 0) return null;
 
-                Team champion = teams[0];
-                double maxStrength = champion.GetTeamStrength();
+                Team champion = null;
+                double maxStrength = 0;
 
-                for (int i = 1; i < teams.Length; i++)
+                foreach (var team in teams)
                 {
-                    double strength = teams[i].GetTeamStrength();
+                    if (team == null) continue;
+                    double strength = team.GetTeamStrength();
                     if (strength > maxStrength)
                     {
-                        champion = teams[i];
+                        champion = team;
                         maxStrength = strength;
                     }
                 }
 
-                Console.WriteLine($"Победитель: {champion.Name}");
                 return champion;
             }
 
@@ -203,15 +168,17 @@ namespace Lab_7
 
             protected override double GetTeamStrength()
             {
-                if (AddedSportsmen == 0) return 0; 
-
-                double totalPlaces = 0;
-                for (int i = 0; i < AddedSportsmen; i++)
+                double places = 0;
+                int count = 0;
+                foreach (var sportsman in Sportsmen)
                 {
-                    totalPlaces += Sportsmen[i].Place;
+                    if (sportsman != null)
+                    {
+                        places += sportsman.Place;
+                        count++;
+                    }
                 }
-                double averagePlace = totalPlaces / AddedSportsmen;
-                return averagePlace == 0 ? 0 : 100 / averagePlace; 
+                return count == 0 ? 0 : 100 / (places / count);
             }
         }
 
@@ -221,21 +188,21 @@ namespace Lab_7
 
             protected override double GetTeamStrength()
             {
-                if (AddedSportsmen == 0) return 0;
-
                 double sumOfPlaces = 0;
                 double productOfPlaces = 1;
+                int count = 0;
 
-                for (int i = 0; i < AddedSportsmen; i++)
+                foreach (var sportsman in Sportsmen)
                 {
-                    sumOfPlaces += Sportsmen[i].Place;
-                    if (Sportsmen[i].Place != 0)
+                    if (sportsman != null)
                     {
-                        productOfPlaces *= Sportsmen[i].Place;
+                        sumOfPlaces += sportsman.Place;
+                        productOfPlaces *= sportsman.Place;
+                        count++;
                     }
                 }
 
-                return productOfPlaces == 0 ? 0 : 100 * sumOfPlaces * AddedSportsmen / productOfPlaces;
+                return productOfPlaces == 0 ? 0 : 100 * sumOfPlaces * count / productOfPlaces;
             }
         }
     }
