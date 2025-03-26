@@ -67,7 +67,7 @@ namespace Lab_7
 
             public void Jump(int[] result)
             {
-                if (result == null || result.Length != 5)
+                if (result == null || _marks == null || result.Length == 0)
                     return;
 
                 if (_filledJumps >= 2)
@@ -193,15 +193,17 @@ namespace Lab_7
                     }
 
                     double[] prize = new double[n];
-                    double N = ((20.0 / n) / 100) * Bank;
+                    double N = (0.2 * Bank) / n;
+                     
+                    prize[0] = Math.Round(0.4 * Bank + N, 2);  
+                    prize[1] = Math.Round(0.25 * Bank + N, 2); 
+                    prize[2] = Math.Round(0.15 * Bank + N, 2);
+
+                    
                     for (int i = 3; i < n; i++)
                     {
-                        prize[i] = Math.Round(N, 5);
+                        prize[i] = Math.Round(N, 2);
                     }
-
-                    prize[0] += 0.4 * Bank + N;
-                    prize[1] += 0.25 * Bank + N;
-                    prize[2] += 0.15 * Bank + N;
 
                     return prize;
                 }
